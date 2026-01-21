@@ -67,3 +67,23 @@
             ];
         }
     }
+
+    /**
+     * Fetch all results from a prepared statement
+     * @param mysqli_stmt $stmt Prepared statement
+     * @return array Array of all result rows
+     */
+    function fetchAllResults($stmt) {
+        $result = $stmt->get_result();
+        $data = [];
+        
+        if ($result) {
+            while ($row = $result->fetch_assoc()) {
+                $data[] = $row;
+            }
+        }
+        
+        return $data;
+    }
+
+?>
