@@ -1,9 +1,9 @@
 <?php
 
-    $db_server = "localhost";
-    $db_user = "root";
-    $db_pass = "";
-    $db_name = "project_database";
+    $db_server = getenv('DB_SERVER') ?: 'localhost';
+    $db_user = getenv('DB_USER') ?: 'root';
+    $db_pass = getenv('DB_PASS') ?: '';
+    $db_name = getenv('DB_NAME') ?: 'project_database';
     $conn = "";
 
     try{
