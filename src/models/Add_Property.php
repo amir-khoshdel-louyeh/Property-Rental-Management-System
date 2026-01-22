@@ -1,6 +1,6 @@
 <?php
-    include("Header.html");
-    include("Database_Manager.php");
+    include("../../config/Database_Manager.php");
+    include("../../config/Validation.php");
 ?>
 
 <!DOCTYPE html>
