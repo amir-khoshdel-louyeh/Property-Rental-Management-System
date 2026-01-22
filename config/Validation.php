@@ -39,3 +39,15 @@ function sanitizeText($text) {
 function validateNumber($number) {
     return is_numeric($number) && $number >= 0;
 }
+
+/**
+ * Validate date format (YYYY-MM-DD)
+ * @param string $date Date string to validate
+ * @return bool True if valid date
+ */
+function validateDate($date) {
+    $d = DateTime::createFromFormat('Y-m-d', $date);
+    return $d && $d->format('Y-m-d') === $date;
+}
+
+?>
