@@ -1,6 +1,7 @@
 <?php
-    include("Header.html");
-    include("Database_Manager.php");
+    include("../../config/Database_Manager.php");
+    include("../../config/Validation.php");
+    include("../../src/views/layouts/Header.html");
 ?>
 
 <!DOCTYPE html>
@@ -41,36 +42,33 @@
 
     if ($_SERVER['REQUEST_METHOD'] === 'POST') 
     {
-        $rental_id = $_POST['rental_id'];
-        $property_id =$_POST['property_id'];
-        $amount = $_POST['amount'];
-        $payment_date = $_POST['payment_date'];
-        
+        $rental_id = $_POST['rental_id'] ?? 0;
+        $property_id = $_POST['property_id'] ?? 0;
+        $amount = $_POST['amount'] ?? 0;
+        $payment_date = sanitizeText($_POST['payment_date'] ?? '');
 
-        if ($rental_id  != NULL && $amount  != NULL && $payment_date != NULL && $property_id != NULL)
-        {
-            $sql = "INSERT INTO Payment (rental_id , property_id , amount , payment_date) 
-                VALUES ('$rental_id','$property_id', '$amount', '$payment_date')";
-
-            try {
-                mysqli_query($conn, $sql);
+        if (!validateNumber($rental_id) || !validateNumber($property_id) || !validateNumber($amount)) {
+            echo "Invalid numeric input! <br>";
+        } else if (empty($payment_date) || !validateDate($payment_date)) {
+            echo "Please enter a valid payment date (YYYY-MM-DD)! <br>";
+        } else {
+            $sql = "INSERT INTO Payment (rental_id, property_id, amount, payment_date) 
+                    VALUES (?, ?, ?, ?)";
+            
+            $result = executeQuery($conn, $sql, "iiis", 
+                [intval($rental_id), intval($property_id), floatval($amount), $payment_date]);
+            
+            if ($result['success']) {
                 echo "Successful";
-            } 
-            catch (mysqli_sql_exception $e) 
-            {
-                echo "Try again! " . $e->getMessage(); 
+            } else {
+                echo "Try again! " . htmlspecialchars($result['error']); 
             }
         }
-        else
-        {
-            echo "Please Enter ALL nessesery informations ! <br>";
-        }
-        
     }
 ?>
 
 
 <?php
-    include("Footer.html");
+    include("../../src/views/layouts/Footer.html");
     mysqli_close($conn);
 ?>
