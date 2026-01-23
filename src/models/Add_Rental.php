@@ -1,6 +1,7 @@
 <?php
-    include("Header.html");
-    include("Database_Manager.php");
+    include("../../config/Database_Manager.php");
+    include("../../config/Validation.php");
+    include("../../src/views/layouts/Header.html");
 ?>
 
 <!DOCTYPE html>
@@ -43,36 +44,38 @@
 
     if ($_SERVER['REQUEST_METHOD'] === 'POST') 
     {
-        $property_id = $_POST['property_id'];
-        $renter_id = $_POST['renter_id'];
-        $start_date = $_POST['start_date'];
-        $end_date = $_POST['end_date'];
-        $monthly_rent = $_POST['monthly_rent'];
-        $security_deposit = $_POST['security_deposit'];
+        $property_id = $_POST['property_id'] ?? 0;
+        $renter_id = $_POST['renter_id'] ?? 0;
+        $start_date = sanitizeText($_POST['start_date'] ?? '');
+        $end_date = sanitizeText($_POST['end_date'] ?? '');
+        $monthly_rent = $_POST['monthly_rent'] ?? 0;
+        $security_deposit = $_POST['security_deposit'] ?? 0;
         
-        if ($property_id  != NULL && $renter_id  != NULL && $start_date  != NULL && $end_date  != NULL && $monthly_rent  != NULL && $security_deposit  != NULL)
-        {
-            $sql = "INSERT INTO Rental (property_id , renter_id , start_date , end_date , monthly_rent , security_deposit ) 
-                VALUES ('$property_id', '$renter_id', '$start_date', '$end_date' , '$monthly_rent' , '$security_deposit')";
-
-            try {
-                mysqli_query($conn, $sql);
+        if (!validateNumber($property_id) || !validateNumber($renter_id) || !validateNumber($monthly_rent) || !validateNumber($security_deposit)) {
+            echo "Invalid numeric input! <br>";
+        } else if (empty($start_date) || !validateDate($start_date)) {
+            echo "Invalid start date (use YYYY-MM-DD)! <br>";
+        } else if (empty($end_date) || !validateDate($end_date)) {
+            echo "Invalid end date (use YYYY-MM-DD)! <br>";
+        } else if ($start_date >= $end_date) {
+            echo "Start date must be before end date! <br>";
+        } else {
+            $sql = "INSERT INTO Rental (property_id, renter_id, start_date, end_date, monthly_rent, security_deposit) 
+                    VALUES (?, ?, ?, ?, ?, ?)";
+            
+            $result = executeQuery($conn, $sql, "iisss", 
+                [intval($property_id), intval($renter_id), $start_date, $end_date, floatval($monthly_rent), floatval($security_deposit)]);
+            
+            if ($result['success']) {
                 echo "Successful";
-            } 
-            catch (mysqli_sql_exception $e) 
-            {
-                echo "Try again! " . $e->getMessage(); 
+            } else {
+                echo "Try again! " . htmlspecialchars($result['error']); 
             }
         }
-        else
-        {
-            echo "Please Enter ALL nessesery informations ! <br>";
-        }
-        
     }
 ?>
 
 <?php
-    include("Footer.html");
+    include("../../src/views/layouts/Footer.html");
     mysqli_close($conn);
 ?>
