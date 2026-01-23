@@ -1,6 +1,7 @@
 <?php
-    include("Header.html");
-    include("Database_Manager.php");
+    include("../../config/Database_Manager.php");
+    include("../../config/Validation.php");
+    include("../../src/views/layouts/Header.html");
 ?>
 
 <!DOCTYPE html>
@@ -40,36 +41,37 @@
 
     if ($_SERVER['REQUEST_METHOD'] === 'POST') 
     {
-        $first_name = $_POST['first_name'];
-        $last_name = $_POST['last_name'];
-        $phone_number = $_POST['phone_number'];
-        $email = $_POST['email'];
-        $date_of_birth = $_POST['date_of_birth'];
+        $first_name = sanitizeText($_POST['first_name'] ?? '');
+        $last_name = sanitizeText($_POST['last_name'] ?? '');
+        $phone_number = sanitizeText($_POST['phone_number'] ?? '');
+        $email = sanitizeText($_POST['email'] ?? '');
+        $date_of_birth = sanitizeText($_POST['date_of_birth'] ?? '');
 
-        
-        if ($first_name  != NULL && $last_name  != NULL)
-        {
-            $sql = "INSERT INTO Renter (first_name , last_name , phone_number , email , date_of_birth) 
-                VALUES ('$first_name', '$last_name', '$phone_number', '$email' , '$date_of_birth')";
-
-            try {
-                mysqli_query($conn, $sql);
+        if (empty($first_name) || empty($last_name)) {
+            echo "Please Enter ALL necessary information! <br>";
+        } else if (!empty($email) && !validateEmail($email)) {
+            echo "Invalid email format! <br>";
+        } else if (!empty($phone_number) && !validatePhone($phone_number)) {
+            echo "Invalid phone number format! <br>";
+        } else if (!empty($date_of_birth) && !validateDate($date_of_birth)) {
+            echo "Invalid date format (use YYYY-MM-DD)! <br>";
+        } else {
+            $sql = "INSERT INTO Renter (first_name, last_name, phone_number, email, date_of_birth) 
+                    VALUES (?, ?, ?, ?, ?)";
+            
+            $result = executeQuery($conn, $sql, "sssss", 
+                [$first_name, $last_name, $phone_number, $email, $date_of_birth]);
+            
+            if ($result['success']) {
                 echo "Successful";
-            } 
-            catch (mysqli_sql_exception $e) 
-            {
-                echo "Try again! " . $e->getMessage(); 
+            } else {
+                echo "Try again! " . htmlspecialchars($result['error']); 
             }
         }
-        else
-        {
-            echo "Please Enter ALL nessesery informations ! <br>";
-        }
-        
     }
 ?>
 
 <?php
-    include("Footer.html");
+    include("../../src/views/layouts/Footer.html");
     mysqli_close($conn);
 ?>
