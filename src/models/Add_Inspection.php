@@ -1,6 +1,7 @@
 <?php
-    include("Header.html");
-    include("Database_Manager.php");
+    include("../../config/Database_Manager.php");
+    include("../../config/Validation.php");
+    include("../../src/views/layouts/Header.html");
 ?>
 
 <!DOCTYPE html>
@@ -38,35 +39,34 @@
 
     if ($_SERVER['REQUEST_METHOD'] === 'POST') 
     {
-        $property_id = $_POST['property_id'];
-        $inspection_date = $_POST['inspection_date'];
-        $findings = $_POST['findings'];
-        $conducted_by = $_POST['conducted_by'];
+        $property_id = $_POST['property_id'] ?? 0;
+        $inspection_date = sanitizeText($_POST['inspection_date'] ?? '');
+        $findings = sanitizeText($_POST['findings'] ?? '');
+        $conducted_by = $_POST['conducted_by'] ?? 0;
 
-        
-        if ($property_id  != NULL && $inspection_date  != NULL && $findings  != NULL && $conducted_by  != NULL)
-        {
-            $sql = "INSERT INTO Inspection (property_id , inspection_date , findings , conducted_by) 
-                VALUES ('$property_id', '$inspection_date', '$findings', '$conducted_by')";
-
-            try {
-                mysqli_query($conn, $sql);
+        if (!validateNumber($property_id) || !validateNumber($conducted_by)) {
+            echo "Invalid numeric input! <br>";
+        } else if (empty($inspection_date) || !validateDate($inspection_date)) {
+            echo "Invalid inspection date (use YYYY-MM-DD)! <br>";
+        } else if (empty($findings)) {
+            echo "Please Enter ALL necessary information! <br>";
+        } else {
+            $sql = "INSERT INTO Inspection (property_id, inspection_date, findings, conducted_by) 
+                    VALUES (?, ?, ?, ?)";
+            
+            $result = executeQuery($conn, $sql, "issi", 
+                [intval($property_id), $inspection_date, $findings, intval($conducted_by)]);
+            
+            if ($result['success']) {
                 echo "Successful";
-            } 
-            catch (mysqli_sql_exception $e) 
-            {
-                echo "Try again! " . $e->getMessage(); 
+            } else {
+                echo "Try again! " . htmlspecialchars($result['error']); 
             }
         }
-        else
-        {
-            echo "Please Enter ALL nessesery informations ! <br>";
-        }
-        
     }
 ?>
 
 <?php
-    include("Footer.html");
+    include("../../src/views/layouts/Footer.html");
     mysqli_close($conn);
 ?>
