@@ -56,23 +56,86 @@ The full schema is available in [`schima.pdf`](./schima.pdf).
 
 ##  Getting Started
 
+### Prerequisites
+- PHP 7.4+ with MySQLi extension
+- MySQL 5.7+ or MariaDB
+- Git
+
 ### 1. Clone the Repository
 ```bash
 git clone https://github.com/<your-username>/<repo-name>.git
 cd <repo-name>
 ```
 
-### 2. Setup Database
-- Create a MySQL database (e.g., `property_management`).
-- Import tables based on [`schima.pdf`](./schima.pdf).
-- Update database credentials in `Database_Manager.php`.
+### 2. Install Dependencies
+Install required system packages:
+```bash
+# On Ubuntu/Debian
+sudo apt install php8.3-cli php8.3-mysql mysql-server
+```
 
-### 3. Run Locally
-- Place the project in your local server directory (e.g., `htdocs` for XAMPP).
-- Open in browser:
+### 3. Setup Database
+- Start MySQL service:
+  ```bash
+  sudo systemctl start mysql
   ```
-  http://localhost/<repo-name>
+- Create a MySQL database:
+  ```bash
+  mysql -u root -p
+  mysql> CREATE DATABASE property_management;
+  mysql> EXIT;
   ```
+- Import the database schema from [`schima.pdf`](./schima.pdf) into the database.
+- Update database credentials in [config/Database_Manager.php](config/Database_Manager.php):
+  ```php
+  $db_server = 'localhost';
+  $db_user = 'your_mysql_user';
+  $db_pass = 'your_mysql_password';
+  $db_name = 'property_management';
+  ```
+  Or set environment variables:
+  ```bash
+  export DB_SERVER=localhost
+  export DB_USER=your_user
+  export DB_PASS=your_password
+  export DB_NAME=property_management
+  ```
+
+### 4. Run Locally
+Start the PHP development server:
+```bash
+cd /path/to/project
+php -S localhost:8000
+```
+
+Then open your browser:
+```
+http://localhost:8000
+```
+
+---
+
+##  Testing
+
+### Manual Testing
+1. Ensure the PHP server is running (`php -S localhost:8000`)
+2. Open `http://localhost:8000` in your browser
+3. Test CRUD operations:
+   - **Add**: Create new properties, landlords, renters, payments, inspections, and services
+   - **View**: Display all records in the system
+   - **Delete**: Remove records (verify relational integrity)
+   - **Search**: Filter by different criteria if implemented
+
+### Database Testing
+Verify database connection and tables:
+```bash
+mysql -u root -p property_management
+mysql> SHOW TABLES;
+mysql> SELECT * FROM landlord;  # Test a sample table
+```
+
+### Browser Console
+Check for JavaScript/PHP errors in the browser console (F12)
 
 ---
 
